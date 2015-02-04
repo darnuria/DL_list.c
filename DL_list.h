@@ -7,8 +7,8 @@
 #include <stdlib.h>
 
 typedef struct _DL_node {
-  struct _DL_list* next;
-  struct _DL_list* prev;
+  struct _DL_node* next;
+  struct _DL_node* prev;
   void* data;
 } DL_node;
 
@@ -18,30 +18,12 @@ typedef struct {
   size_t length;
 } DL_list;
 
-DL_node* DL_node_new(void* data) {
-  DL_node* n = malloc(sizeof(DL_node));
-  assert(n != NULL)
-  n->next = NULL;
-  n->prev = NULL;
-  n->data = data;
+DL_list* DL_new(void* data, size_t size_type);
 
-  return n;
-}
+// tail
+void DL_append(DL_list* self, void* data);
 
-DL_list* DL_list_new(void* data, size_t size_type) {
-  DL_list* l = // TODO;
-  DL_node* n = DL_node_new(data);
-  assert(l != NULL); // TODO good error handling.
-  assert(n != NULL);
+// head
+void DL_List_prepend(DL_list* self, void* data);
 
-  l->length = 1;
-  l->head = n;
-  l->tail = n;
-
-  return n;
-}
-
-
-
-
-#endif DL_LIST
+#endif // DL_LIST
