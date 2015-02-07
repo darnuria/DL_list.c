@@ -18,10 +18,15 @@ typedef struct {
   size_t length;
 } DL_list;
 
+DL_node* DL_node_new (void* data);
+
 DL_list* DL_new (void* data, size_t size_type);
 
+static
+void node_connect (DL_node* a, DL_node* b)
+
 // tail
-void DL_append (DL_list* self, void* data);
+void DL_list_append (DL_list* self, void* data);
 
 // head
 void DL_list_prepend (DL_list* self, void* data);
@@ -29,5 +34,19 @@ void DL_list_prepend (DL_list* self, void* data);
 void DL_list_concatenate (DL_list* a, DL_list* b);
 
 void DL_list_insert (DL_list* self, int index, void* data);
+
+DL_list* DL_list_copy (DL_list* self);
+
+DL_node* DL_node_copy (DL_node* self);
+
+DL_list* DL_list_reverse (DL_list* self);
+
+void DL_node_delete (DL_node* self);
+
+void DL_list_del_prepend (DL_list* self);
+
+void DL_list_del_append (DL_list* self);
+
+void DL_list_delete (DL_list* self);
 
 #endif // DL_LIST
