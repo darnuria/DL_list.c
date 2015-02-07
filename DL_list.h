@@ -18,12 +18,16 @@ typedef struct {
   size_t length;
 } DL_list;
 
-DL_list* DL_new(void* data, size_t size_type);
+DL_list* DL_new (void* data, size_t size_type);
 
 // tail
-void DL_append(DL_list* self, void* data);
+void DL_append (DL_list* self, void* data);
 
 // head
-void DL_List_prepend(DL_list* self, void* data);
+void DL_list_prepend (DL_list* self, void* data);
+
+void DL_list_concatenate (DL_list* a, DL_list* b);
+
+void DL_list_insert (DL_list* self, int index, void* data);
 
 #endif // DL_LIST
