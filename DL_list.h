@@ -21,7 +21,7 @@ typedef struct {
 static
 DL_node* DL_node_new (void* data);
 
-DL_list* DL_new (void* data, size_t size_type);
+DL_list* DL_new (void* data);
 
 static
 void node_connect (DL_node* a, DL_node* b);
