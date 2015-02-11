@@ -24,15 +24,15 @@ typedef struct {
 
 // Allocate a new list.
 // dtor: destructor of for the givien void* data
-DL_list* DL_new(void* data, size_t size, void(*dtor)(void**, size_t size));
+DL_list* DL_new(size_t size, void(*dtor)(void**, size_t size));
 
 // Add on tail.
 // Complexity: O(1)
-void DL_append(DL_list* self, void* data);
+void DL_push_back(DL_list* self, void* data);
 
 // Add on head.
 // Complexity: O(1)
-void DL_prepend(DL_list* self, void* data);
+void DL_push_front(DL_list* self, void* data);
 
 //! Concatenate B to A in O(1) with A self modification.
 void DL_concat(DL_list* self, DL_list* b);

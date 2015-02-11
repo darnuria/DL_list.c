@@ -43,6 +43,7 @@ void DL_node_drop (DL_node** self, size_t size, void(*dtor)(void**, size_t)) {
   *self = NULL;
 }
 
+static
 DL_node* DL_node_new(void* data) {
   DL_node* n = malloc(sizeof(DL_node));
   assert(n != NULL);
@@ -54,49 +55,71 @@ DL_node* DL_node_new(void* data) {
   return n;
 }
 
-DL_list* DL_new(void* data, size_t size, void(*dtor)(void**, size_t size)) {
+DL_list* DL_new(size_t size, void(*dtor)(void**, size_t size)) {
   DL_list* l = malloc(sizeof(DL_list));
-  DL_node* n = DL_node_new(data);
 
-  if ((l == NULL) || (n == NULL)) {
+  if (l == NULL) {
     perror ("DL_new:");
-    assert(l == NULL);
-    assert(n == NULL);
     return NULL;
   }
 
-  l->length = 1;
-  l->head = n;
-  l->tail = n;
+  l->length = 0;
+  l->head = NULL;
+  l->tail = NULL;
   l->type_size = size;
   l->dtor = dtor;
 
   return l;
 }
 
-void DL_append(DL_list* self, void* data) {
-  DL_node* n = DL_node_new(data);
+static
+DL_node* DL_link_with_prev(DL_node* next, DL_node* prev) {
+  next->prev = prev;
+  return next;
+}
 
-  if (n == NULL) {
-    perror ("DL_append:\n");
+static
+void DL_push_front_node(DL_list* self, DL_node* new_head) {
+  if (self->head == NULL) {
+    self->tail = new_head;
+    self->head = DL_link_with_prev(new_head, NULL);
+  } else {
+    DL_node* old_head = self->head;
+    self->head = new_head;
+
+    DL_node_connect(old_head, new_head);
   }
-  DL_node* tmp = self->tail;
-  self->tail = n;
-
-  DL_node_connect(tmp, n);
   self->length += 1;
 }
 
-void DL_prepend (DL_list* self, void* data) {
+static
+void DL_push_back_node(DL_list* self, DL_node* new_tail) {
+  if (self->tail == NULL) {
+    DL_push_front_node(self, new_tail);
+  } else {
+    DL_node* tail = self->tail;
+    self->tail = new_tail;
+    tail->next = DL_link_with_prev(new_tail, tail);
+    self->length += 1;
+  }
+}
+
+void DL_push_back(DL_list* self, void* data) {
+  DL_node* n = DL_node_new(data);
+
+  if (n == NULL) {
+    perror ("DL_push_back:\n");
+  }
+  DL_push_back_node(self, n);
+}
+
+void DL_push_front(DL_list* self, void* data) {
   DL_node* n = DL_node_new(data);
 
   if(n == NULL) {
     perror ("Allocation Error ! \n");
   }
-  DL_node* tmp = self->head;
-  self->head = n;
-
-  DL_node_connect(tmp, n);
+  DL_push_front_node(self, n);
   self->length += 1;
 }
 
@@ -111,9 +134,9 @@ void DL_insert (DL_list* self, size_t index, void* data) {
     perror("DL_list_insert: index out of bound.");
     assert(false);
   } else if (index == 0) {
-     DL_prepend(self, data);
+     DL_push_front(self, data);
   } else if (index == len) {
-    DL_append(self, data);
+    DL_push_back(self, data);
   } else {
     DL_node* n = DL_node_new(data); // Alloc a new node for the data to be inserted.
     DL_node* iter = NULL;
@@ -136,22 +159,20 @@ void DL_insert (DL_list* self, size_t index, void* data) {
 }
 
 DL_list* DL_copy(const DL_list* self, void*(f_cpy)(void*, size_t)) {
-  DL_list* cpy = DL_new(self->head->data, self->type_size, self->dtor);
-  DL_node* start = self->head->next;
+  DL_list* cpy = DL_new(self->type_size, self->dtor);
 
-  for (DL_node* iter = start; iter != NULL; iter = iter->next) {
-    DL_append(cpy, f_cpy(iter->data, self->type_size));
+  for (DL_node* iter = self->head; iter != NULL; iter = iter->next) {
+    DL_push_front(cpy, f_cpy(iter->data, self->type_size));
   }
   return cpy;
 }
 
 
 DL_list* DL_reverse(const DL_list* self) {
-  DL_list* cpy = DL_new(self->tail->data, self->type_size, self->dtor);
-  DL_node* start = self->tail->prev;
+  DL_list* cpy = DL_new(self->type_size, self->dtor);
 
-  for (DL_node* iter = start; iter != NULL; iter = iter->prev) {
-    DL_append(cpy, iter->data);
+  for (DL_node* iter = self->tail; iter != NULL; iter = iter->prev) {
+    DL_push_front(cpy, iter->data);
   }
   return cpy;
 }
