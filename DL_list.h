@@ -6,6 +6,16 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+//! Use this macro for casting your destructors.
+#define DL_cast_dtor(f) ((void (*)(void**, size_t))(f))
+
+//! Use this macro for casting your clone function.
+#define DL_cast_clone(f) ((void* (*)(void*, size_t))(f))
+
+//! Use this macro for casting your datatype.
+#define DL_cast_data(d) ((void*)(d))
+
+
 //! Private type.
 typedef struct _DL_node {
   struct _DL_node* next;
