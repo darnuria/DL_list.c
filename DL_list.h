@@ -25,16 +25,27 @@ typedef struct _DL_node {
 
 // Accept only one type of data Undefined behaviour with mixed datatype.
 typedef struct {
-  DL_node* head;
-  DL_node* tail;
-  size_t length; // number of node in the list.
-  size_t type_size; // Datatype size equivalent to typeof(T)
-  void(*dtor)(void**, size_t); // Destructor for our data.
+  DL_node* head; // Private.
+  DL_node* tail; // Private
+  size_t length; // Private: number of node in the list.
+  size_t type_size; // Private: Datatype size equivalent to typeof(T)
+  void(*dtor)(void**, size_t); // Private: Destructor for our data.
+  void*(*clone)(void*, size_t); // Private: Destructor for our data.
 } DL_list;
 
 // Allocate a new list.
 // dtor: destructor of for the givien void* data
-DL_list* DL_new(size_t size, void(*dtor)(void**, size_t size));
+DL_list* DL_new(size_t size, void(*dtor)(void**, size_t size), void*(*clone)(void*, size_t));
+
+
+//! return the size O(1).
+size_t DL_length(const DL_list* self);
+
+//! return the head.
+void* DL_front(const DL_list* self);
+
+//! return the back
+void* DL_back(const DL_list*self);
 
 // Add on tail.
 // Complexity: O(1)
@@ -67,6 +78,12 @@ DL_list* DL_sort(const DL_list* self);
 
 //! TODO
 void DL_sort_mut(DL_list* self);
+
+//! Return a new list composed of entry that matched the predicate p.
+DL_list* DL_filter(const DL_list* self, DL_list*(*p)(void*));
+
+//! Return true if the list is empty.
+bool DL_is_empty(const DL_list* self);
 
 //! Remove last elem and return it.
 void* DL_pop(DL_list* self);

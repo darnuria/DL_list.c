@@ -55,7 +55,9 @@ DL_node* DL_node_new(void* data) {
   return n;
 }
 
-DL_list* DL_new(size_t size, void(*dtor)(void**, size_t size)) {
+DL_list* DL_new(size_t size,
+    void(*dtor)(void**, size_t size),
+    void*(*clone)(void*, size_t)) {
   DL_list* l = malloc(sizeof(DL_list));
 
   if (l == NULL) {
@@ -68,9 +70,19 @@ DL_list* DL_new(size_t size, void(*dtor)(void**, size_t size)) {
   l->tail = NULL;
   l->type_size = size;
   l->dtor = dtor;
+  l->clone = clone;
 
   return l;
 }
+
+
+size_t DL_length(const DL_list* self) { return self->length; }
+
+void* DL_front(const DL_list* self) { return self->head->data; }
+
+void* DL_back(const DL_list*self) { return self->tail->data; }
+
+bool DL_is_empty(const DL_list* self) { return self->length == 0; }
 
 static
 DL_node* DL_link_with_prev(DL_node* next, DL_node* prev) {
@@ -134,7 +146,7 @@ void DL_insert (DL_list* self, size_t index, void* data) {
     perror("DL_list_insert: index out of bound.");
     assert(false);
   } else if (index == 0) {
-     DL_push_front(self, data);
+    DL_push_front(self, data);
   } else if (index == len) {
     DL_push_back(self, data);
   } else {
@@ -159,7 +171,7 @@ void DL_insert (DL_list* self, size_t index, void* data) {
 }
 
 DL_list* DL_copy(const DL_list* self, void*(f_cpy)(void*, size_t)) {
-  DL_list* cpy = DL_new(self->type_size, self->dtor);
+  DL_list* cpy = DL_new(self->type_size, self->dtor, self->clone);
 
   for (DL_node* iter = self->head; iter != NULL; iter = iter->next) {
     DL_push_front(cpy, f_cpy(iter->data, self->type_size));
@@ -169,7 +181,7 @@ DL_list* DL_copy(const DL_list* self, void*(f_cpy)(void*, size_t)) {
 
 
 DL_list* DL_reverse(const DL_list* self) {
-  DL_list* cpy = DL_new(self->type_size, self->dtor);
+  DL_list* cpy = DL_new(self->type_size, self->dtor, self->clone);
 
   for (DL_node* iter = self->tail; iter != NULL; iter = iter->prev) {
     DL_push_front(cpy, iter->data);
@@ -186,6 +198,19 @@ void DL_reverse_mut(DL_list* self) {
 DL_list* DL_sort(const DL_list* self) {
   (void) self;
   return NULL;
+}
+
+
+DL_list* DL_filter(const DL_list* self, DL_list*(*p)(void*)) {
+  DL_list* result = DL_new(self->type_size, self->dtor, self->clone);
+  const size_t size_type = self->type_size;
+
+  for (DL_node* iter = self->head; iter != NULL; iter = iter->next) {
+    if (p(iter->data)) {
+      DL_push_front(result, self->clone(iter->data, size_type));
+    }
+  }
+  return result;
 }
 
 // TODO:
