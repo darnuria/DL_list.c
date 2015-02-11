@@ -6,48 +6,62 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+//! Private type.
 typedef struct _DL_node {
   struct _DL_node* next;
   struct _DL_node* prev;
-  void* data;
+  void* data; // Data to store we know nothing about it. If were storing an array please make a  vector like.
 } DL_node;
 
+// Accept only one type of data Undefined behaviour with mixed datatype.
 typedef struct {
   DL_node* head;
   DL_node* tail;
-  size_t length;
+  size_t length; // number of node in the list.
+  size_t type_size; // Datatype size equivalent to typeof(T)
+  void(*dtor)(void**, size_t); // Destructor for our data.
 } DL_list;
 
-static
-DL_node* DL_node_new (void* data);
+// Allocate a new list.
+// dtor: destructor of for the givien void* data
+DL_list* DL_new(void* data, size_t size, void(*dtor)(void**, size_t size));
 
-DL_list* DL_new (void* data);
+// Add on tail.
+// Complexity: O(1)
+void DL_append(DL_list* self, void* data);
 
-static
-void node_connect (DL_node* a, DL_node* b);
+// Add on head.
+// Complexity: O(1)
+void DL_prepend(DL_list* self, void* data);
 
-// tail
-void DL_list_append (DL_list* self, void* data);
+//! Concatenate B to A in O(1) with A self modification.
+void DL_concat(DL_list* self, DL_list* b);
 
-// head
-void DL_list_prepend (DL_list* self, void* data);
+//! append B to A O(n) and return a new list.
+DL_list* DL_concat_mut(const DL_list* self, const DL_list* b);
 
-void DL_list_concatenate (DL_list* a, DL_list* b);
+//! Insert a data in the lista at an index.
+void DL_insert(DL_list* self, size_t index, void* data);
 
-void DL_list_insert (DL_list* self, int index, void* data);
+//! Copy a list with a `f_cpy` function.
+DL_list* DL_copy(const DL_list* self, void*(f_cpy)(void*, size_t));
 
-DL_list* DL_list_copy (DL_list* self);
+//! Return a new list reversed from self.
+DL_list* DL_reverse(const DL_list* self);
 
-DL_node* DL_node_copy (DL_node* self);
+//! Reverse in place self.
+void DL_reverse_mut(DL_list* self);
 
-DL_list* DL_list_reverse (DL_list* self);
+//! TODO
+DL_list* DL_sort(const DL_list* self);
 
-void DL_node_delete (DL_node* self);
+//! TODO
+void DL_sort_mut(DL_list* self);
 
-void DL_list_del_prepend (DL_list* self);
+//! Remove last elem and return it.
+void* DL_pop(DL_list* self);
 
-void DL_list_del_append (DL_list* self);
-
-void DL_list_delete (DL_list* self);
+//! Delete the list given in parameter and set as null the pointer.
+void DL_drop(DL_list** self);
 
 #endif // DL_LIST
