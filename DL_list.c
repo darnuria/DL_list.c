@@ -9,18 +9,18 @@ DL_node* DL_node_new(void* data);
 
 //! Delete use a given Dtor to delete a node.
 static
-void DL_node_drop (DL_node** self, size_t size, void(*dtor)(void**, size_t));
+void DL_node_drop(DL_node** self, size_t size, void(*dtor)(void**, size_t));
 
 //! Connect two nodes.
 static
-void DL_node_connect (DL_node* a, DL_node* b) {
+void DL_node_connect(DL_node* a, DL_node* b) {
   a->next = b;
   b->prev = a;
 }
 
 //! Unconnect two nodes.
 static
-void DL_node_unconnect (DL_node* a, DL_node* b) {
+void DL_node_unconnect(DL_node* a, DL_node* b) {
   a->next = NULL;
   b->prev = NULL;
 }
@@ -75,15 +75,6 @@ DL_list* DL_new(size_t size,
   return l;
 }
 
-
-size_t DL_length(const DL_list* self) { return self->length; }
-
-void* DL_front(const DL_list* self) { return self->head->data; }
-
-void* DL_back(const DL_list*self) { return self->tail->data; }
-
-bool DL_is_empty(const DL_list* self) { return self->length == 0; }
-
 static
 DL_node* DL_link_with_prev(DL_node* next, DL_node* prev) {
   next->prev = prev;
@@ -98,7 +89,6 @@ void DL_push_front_node(DL_list* self, DL_node* new_head) {
   } else {
     DL_node* old_head = self->head;
     self->head = new_head;
-
     DL_node_connect(old_head, new_head);
   }
   self->length += 1;
@@ -115,6 +105,14 @@ void DL_push_back_node(DL_list* self, DL_node* new_tail) {
     self->length += 1;
   }
 }
+
+size_t DL_length(const DL_list* self) { return self->length; }
+
+void* DL_front(const DL_list* self) { return self->head->data; }
+
+void* DL_back(const DL_list*self) { return self->tail->data; }
+
+bool DL_is_empty(const DL_list* self) { return self->length == 0; }
 
 void DL_push_back(DL_list* self, void* data) {
   DL_node* n = DL_node_new(data);
@@ -139,7 +137,7 @@ void DL_concat(DL_list* self, DL_list* b) {
   DL_node_connect(self->tail, b->head);
 }
 
-void DL_insert (DL_list* self, size_t index, void* data) {
+void DL_insert(DL_list* self, size_t index, void* data) {
   const size_t len = self->length;
 
   if (index > len) {
