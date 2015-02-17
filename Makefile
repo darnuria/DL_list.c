@@ -41,6 +41,9 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.c
 	echo "Compiling $@ into $<"
 	$(CC) $(CFLAGS) $(INCDIR) -o $@ -c $<
 
+test: all
+	gcc $(CFLAGS) -I. -o run_test test.c libdl_list.a
+
 clean:
 	rm -f $(OBJS_PREF)
 

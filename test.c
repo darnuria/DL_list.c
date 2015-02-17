@@ -9,6 +9,10 @@ typedef struct {
   int id;
 } FatPtr;
 
+void FatPtr_dtor(FatPtr** a, size_t size);
+FatPtr* FatPtr_new(int data);
+FatPtr* FatPtr_clone(FatPtr* a, size_t s);
+
 FatPtr* FatPtr_new(int data) {
   FatPtr* n = malloc(sizeof(FatPtr));
   assert(n != NULL);
@@ -18,8 +22,9 @@ FatPtr* FatPtr_new(int data) {
 
 void FatPtr_dtor(FatPtr** a, size_t size) {
   (void) size;
-  assert(a != NULL && *a != NULL);
-  free(*a);
+  assert(a != NULL);
+  assert(*a != NULL);
+  free((FatPtr*)*a);
   *a = NULL;
 }
 
@@ -41,22 +46,51 @@ int main(void) {
   assert(a != NULL && DL_length(a) == 0);
 
   DL_push_front(a, FatPtr_new(4));
-  assert(DL_length(a) == 1 && FatPtr_cast(DL_front(a))->id == 4);
+  assert(DL_length(a) == 1);
+  assert(FatPtr_cast(DL_front(a))->id == 4);
+  assert(a->head->next == NULL);
+  assert(a->tail->prev == NULL);
+  assert(a->head->prev == NULL);
+  assert(a->tail->next == NULL);
+
   DL_push_front(a, FatPtr_new(3));
-  assert(DL_length(a) == 2 && FatPtr_cast(DL_front(a))->id == 3);
+  assert(DL_length(a) == 2);
+  assert(FatPtr_cast(DL_front(a))->id == 3);
+  assert(a->head->next != NULL);
+  assert(a->tail->prev != NULL);
+  assert(a->head->prev == NULL);
+  assert(a->tail->next == NULL);
+
   DL_push_front(a, FatPtr_new(2));
-  assert(DL_length(a) == 3 && FatPtr_cast(DL_front(a))->id == 2);
+  assert(DL_length(a) == 3);
+  assert(FatPtr_cast(DL_front(a))->id == 2);
+  assert(a->head->next != NULL);
+  assert(a->tail->prev != NULL);
+  assert(a->head->prev == NULL);
+  assert(a->tail->next == NULL);
+
   DL_push_front(a, FatPtr_new(1));
-  assert(DL_length(a) == 4 && FatPtr_cast(DL_front(a))->id == 1);
+  assert(DL_length(a) == 4);
+  assert(FatPtr_cast(DL_front(a))->id == 1);
+  assert(a->head->next != NULL);
+  assert(a->tail->prev != NULL);
+  assert(a->head->prev == NULL);
+  assert(a->tail->next == NULL);
+
+  DL_clear(a);
 
   DL_push_back(a, FatPtr_new(4));
-  assert(DL_length(a) == 1 && FatPtr_cast(DL_back(a))->id == 4);
+  assert(DL_length(a) == 1);
+  assert(FatPtr_cast(DL_back(a))->id == 4);
   DL_push_back(a, FatPtr_new(3));
-  assert(DL_length(a) == 2 && FatPtr_cast(DL_back(a))->id == 3);
+  assert(DL_length(a) == 2);
+  assert(FatPtr_cast(DL_back(a))->id == 3);
   DL_push_back(a, FatPtr_new(2));
-  assert(DL_length(a) == 3 && FatPtr_cast(DL_back(a))->id == 2);
+  assert(DL_length(a) == 3);
+  assert(FatPtr_cast(DL_back(a))->id == 2);
   DL_push_back(a, FatPtr_new(1));
-  assert(DL_length(a) == 4 && FatPtr_cast(DL_back(a))->id == 1);
+  assert(DL_length(a) == 4);
+  assert(FatPtr_cast(DL_back(a))->id == 1);
 
   DL_drop(&a);
   assert(a == NULL);

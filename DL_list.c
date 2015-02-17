@@ -36,10 +36,13 @@ void DL_node_unconnect(DL_node* a, DL_node* b) {
 // TODO
 static
 void DL_node_drop (DL_node** self, size_t size, void(*dtor)(void**, size_t)) {
+  assert(self != NULL);
   DL_node* s = *self;
+  assert(s != NULL);
   s->prev = NULL;
   s->next = NULL;
-  dtor(s->data, size);
+  dtor(&(s->data), size);
+  free(*self);
   *self = NULL;
 }
 
@@ -51,7 +54,6 @@ DL_node* DL_node_new(void* data) {
   n->next = NULL;
   n->prev = NULL;
   n->data = data;
-
   return n;
 }
 
@@ -71,7 +73,6 @@ DL_list* DL_new(size_t size,
   l->type_size = size;
   l->dtor = dtor;
   l->clone = clone;
-
   return l;
 }
 
@@ -89,7 +90,11 @@ void DL_push_front_node(DL_list* self, DL_node* new_head) {
   } else {
     DL_node* old_head = self->head;
     self->head = new_head;
-    DL_node_connect(old_head, new_head);
+    self->head->next = DL_link_with_prev(old_head, new_head);
+    assert(self->head->next != NULL);
+    assert(self->tail->prev != NULL);
+    assert(self->head->prev == NULL);
+    assert(self->tail->next == NULL);
   }
   self->length += 1;
 }
@@ -114,6 +119,21 @@ void* DL_back(const DL_list*self) { return self->tail->data; }
 
 bool DL_is_empty(const DL_list* self) { return self->length == 0; }
 
+void DL_clear(DL_list* self) {
+  DL_node* iter = self->head;
+  assert(iter != NULL);
+  while (iter->next != NULL) {
+    DL_node* tmp = iter->next;
+    assert(tmp != NULL);
+    assert(iter != NULL);
+    DL_node_drop(&iter, self->type_size, self->dtor);
+    iter = tmp;
+  }
+  self->length = 0;
+  self->head = NULL;
+  self->tail = NULL;
+}
+
 void DL_push_back(DL_list* self, void* data) {
   DL_node* n = DL_node_new(data);
 
@@ -130,7 +150,6 @@ void DL_push_front(DL_list* self, void* data) {
     perror ("Allocation Error ! \n");
   }
   DL_push_front_node(self, n);
-  self->length += 1;
 }
 
 void DL_concat(DL_list* self, DL_list* b) {
@@ -229,5 +248,12 @@ void* DL_pop(DL_list* self) {
 
 // TODO: implement.
 void DL_drop(DL_list** self) {
-  (void) self;
+  assert(self != NULL);
+  DL_clear(*self);
+
+  assert((*self)->head == NULL);
+  assert((*self)->tail == NULL);
+
+  free(*self);
+  *self = NULL;
 }

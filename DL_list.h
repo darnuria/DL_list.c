@@ -47,9 +47,16 @@ void* DL_front(const DL_list* self);
 //! return the back
 void* DL_back(const DL_list*self);
 
+//! Return true if the list is empty.
+//! Complexity: O(1)
+bool DL_is_empty(const DL_list* self);
+
 // Add on tail.
 // Complexity: O(1)
 void DL_push_back(DL_list* self, void* data);
+
+// Clean the list but do not free the list itself.
+void DL_clear(DL_list* self);
 
 // Add on head.
 // Complexity: O(1)
@@ -81,9 +88,6 @@ void DL_sort_mut(DL_list* self);
 
 //! Return a new list composed of entry that matched the predicate p.
 DL_list* DL_filter(const DL_list* self, DL_list*(*p)(void*));
-
-//! Return true if the list is empty.
-bool DL_is_empty(const DL_list* self);
 
 //! Remove last elem and return it.
 void* DL_pop(DL_list* self);
