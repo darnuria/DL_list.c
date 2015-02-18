@@ -7,20 +7,22 @@
 #include <stdlib.h>
 
 //! Use this macro for casting your destructors.
-#define DL_cast_dtor(f) ((void (*)(void**, size_t))(f))
+#define DL_as_dtor(f) ((void (*)(void**, size_t))(f))
 
 //! Use this macro for casting your clone function.
-#define DL_cast_clone(f) ((void* (*)(void*, size_t))(f))
+#define DL_as_clone(f) ((void* (*)(void*, size_t))(f))
 
-//! Use this macro for casting your datatype.
-#define DL_cast_data(d) ((void*)(d))
+//! Casting to internal representation.
+#define DL_as_data(d) ((void*)(d))
 
+//! Recast in your type.
+#define DL_from_data(type, data) ((type*)(data))
 
 //! Private type.
 typedef struct _DL_node {
   struct _DL_node* next;
   struct _DL_node* prev;
-  void* data; // Data to store we know nothing about it. If were storing an array please make a  vector like.
+  void* data; // Data to store we know nothing about it. If were storing an array please use vector like type.
 } DL_node;
 
 // Accept only one type of data Undefined behaviour with mixed datatype.
@@ -37,14 +39,13 @@ typedef struct {
 // dtor: destructor of for the givien void* data
 DL_list* DL_new(size_t size, void(*dtor)(void**, size_t size), void*(*clone)(void*, size_t));
 
-
 //! return the size O(1).
 size_t DL_length(const DL_list* self);
 
-//! return the head.
+//! return the head. Cause an exit(1) if called on empty list.
 void* DL_front(const DL_list* self);
 
-//! return the back
+//! return the back. exit(1) with empty list.
 void* DL_back(const DL_list*self);
 
 //! Return true if the list is empty.

@@ -7,7 +7,7 @@
 static
 DL_node* DL_node_new(void* data);
 
-//! Delete use a given Dtor to delete a node.
+//! Delete a node. Use a user-defined Dtor to delete a data inside a node.
 static
 void DL_node_drop(DL_node** self, size_t size, void(*dtor)(void**, size_t));
 
@@ -62,7 +62,7 @@ DL_list* DL_new(size_t size,
     void*(*clone)(void*, size_t)) {
   DL_list* l = malloc(sizeof(DL_list));
 
-  if (l == NULL) {
+  if(l == NULL) {
     perror ("DL_new:");
     return NULL;
   }
@@ -84,16 +84,18 @@ DL_node* DL_link_with_prev(DL_node* next, DL_node* prev) {
 
 static
 void DL_push_front_node(DL_list* self, DL_node* new_head) {
-  if (self->head == NULL) {
+  if(self->head == NULL) {
     self->tail = new_head;
     self->head = DL_link_with_prev(new_head, NULL);
   } else {
     DL_node* old_head = self->head;
     self->head = new_head;
     self->head->next = DL_link_with_prev(old_head, new_head);
+    assert(self->head);
     assert(self->head->next != NULL);
-    assert(self->tail->prev != NULL);
     assert(self->head->prev == NULL);
+    assert(self->tail);
+    assert(self->tail->prev != NULL);
     assert(self->tail->next == NULL);
   }
   self->length += 1;
@@ -101,7 +103,7 @@ void DL_push_front_node(DL_list* self, DL_node* new_head) {
 
 static
 void DL_push_back_node(DL_list* self, DL_node* new_tail) {
-  if (self->tail == NULL) {
+  if(self->tail == NULL) {
     DL_push_front_node(self, new_tail);
   } else {
     DL_node* tail = self->tail;
@@ -113,16 +115,28 @@ void DL_push_back_node(DL_list* self, DL_node* new_tail) {
 
 size_t DL_length(const DL_list* self) { return self->length; }
 
-void* DL_front(const DL_list* self) { return self->head->data; }
+void* DL_front(const DL_list* self) {
+  if(self->head == NULL) {
+    fprintf(stderr, "DL_front: called with empty list undefined behavior.\n");
+    exit(1);
+  }
+  return self->head->data;
+}
 
-void* DL_back(const DL_list*self) { return self->tail->data; }
+void* DL_back(const DL_list*self) {
+  if(self->tail == NULL) {
+    fprintf(stderr, "DL_back: called with empty list undefined behavior.\n");
+    exit(1);
+  }
+  return self->tail->data;
+}
 
 bool DL_is_empty(const DL_list* self) { return self->length == 0; }
 
 void DL_clear(DL_list* self) {
   DL_node* iter = self->head;
   assert(iter != NULL);
-  while (iter->next != NULL) {
+  while(iter->next != NULL) {
     DL_node* tmp = iter->next;
     assert(tmp != NULL);
     assert(iter != NULL);
@@ -137,8 +151,8 @@ void DL_clear(DL_list* self) {
 void DL_push_back(DL_list* self, void* data) {
   DL_node* n = DL_node_new(data);
 
-  if (n == NULL) {
-    perror ("DL_push_back:\n");
+  if(n == NULL) {
+    perror("DL_push_back:\n");
   }
   DL_push_back_node(self, n);
 }
@@ -159,19 +173,19 @@ void DL_concat(DL_list* self, DL_list* b) {
 void DL_insert(DL_list* self, size_t index, void* data) {
   const size_t len = self->length;
 
-  if (index > len) {
+  if(index > len) {
     perror("DL_list_insert: index out of bound.");
     assert(false);
-  } else if (index == 0) {
+  } else if(index == 0) {
     DL_push_front(self, data);
-  } else if (index == len) {
+  } else if(index == len) {
     DL_push_back(self, data);
   } else {
     DL_node* n = DL_node_new(data); // Alloc a new node for the data to be inserted.
     DL_node* iter = NULL;
-    if (index > (len / 2)) {
+    if(index > (len / 2)) {
       iter = self->tail;
-      for (size_t i = 0; i < index; i += 1) {
+      for(size_t i = 0; i < index; i += 1) {
         iter = iter->prev; // iteration from last to index.
       }
     } else {
@@ -190,17 +204,16 @@ void DL_insert(DL_list* self, size_t index, void* data) {
 DL_list* DL_copy(const DL_list* self, void*(f_cpy)(void*, size_t)) {
   DL_list* cpy = DL_new(self->type_size, self->dtor, self->clone);
 
-  for (DL_node* iter = self->head; iter != NULL; iter = iter->next) {
+  for(DL_node* iter = self->head; iter != NULL; iter = iter->next) {
     DL_push_front(cpy, f_cpy(iter->data, self->type_size));
   }
   return cpy;
 }
 
-
 DL_list* DL_reverse(const DL_list* self) {
   DL_list* cpy = DL_new(self->type_size, self->dtor, self->clone);
 
-  for (DL_node* iter = self->tail; iter != NULL; iter = iter->prev) {
+  for(DL_node* iter = self->tail; iter != NULL; iter = iter->prev) {
     DL_push_front(cpy, iter->data);
   }
   return cpy;
@@ -217,20 +230,19 @@ DL_list* DL_sort(const DL_list* self) {
   return NULL;
 }
 
-
 DL_list* DL_filter(const DL_list* self, DL_list*(*p)(void*)) {
   DL_list* result = DL_new(self->type_size, self->dtor, self->clone);
   const size_t size_type = self->type_size;
 
-  for (DL_node* iter = self->head; iter != NULL; iter = iter->next) {
-    if (p(iter->data)) {
+  for(DL_node* iter = self->head; iter != NULL; iter = iter->next) {
+    if(p(iter->data)) {
       DL_push_front(result, self->clone(iter->data, size_type));
     }
   }
   return result;
 }
 
-// TODO:
+// TODO: need test
 void DL_sort_mut(DL_list* self) {
   (void) self;
 }
@@ -240,6 +252,7 @@ void* DL_pop(DL_list* self) {
   DL_node* new_tail = tail->prev;
 
   DL_node_unconnect(new_tail, tail);
+  self->tail = new_tail;
   void* data = tail->data;
   DL_node_drop(&tail, self->type_size, self->dtor);
   self->length -= 1;
