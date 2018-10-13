@@ -1,4 +1,4 @@
-# DL_list.c
+# `DL_list.c`
 Doubly linked list in C11
 
 # Compilation
